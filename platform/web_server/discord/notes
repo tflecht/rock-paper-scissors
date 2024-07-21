@@ -1,0 +1,10 @@
+Authentication flow for Discord:
+Use token authentication, where the flow is:
+- user issues login request form Discord
+  - if there isn't a discord linkage to a user account:
+    - direct them to the website to connect their wallet
+  - else:
+    - if that user is currently logged in:
+      - create a token in the discord bot for them; they are now logged in via discord
+    - else:
+      - as them to sign in through the website, then issue the discord log in again

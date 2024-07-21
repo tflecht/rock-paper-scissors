@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+import os
+
+from dotenv import load_dotenv
+load_dotenv()
+DEBUG = os.environ.get("DEBUG", None)
+CMD = 'gunicorn --timeout=60 --bind=0.0.0.0:8000 --workers=3 --threads=4 --forwarded-allow-ips="*" -k uvicorn.workers.UvicornWorker web_server.asgi'
+if DEBUG == 'TRUE':
+    CMD = 'python manage.py runserver 0.0.0.0:8000'
+
+os.system('python manage.py migrate')
+#os.system('python manage.py runscript configure_system')
+print(CMD)
+os.system(CMD)

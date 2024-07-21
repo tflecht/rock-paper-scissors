@@ -1,0 +1,66 @@
+version: "3.9"
+services:
+  cache:
+    image: 'redis:latest'
+    restart: 'on-failure'
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass password
+  gamebot:
+    build: game_bot
+    command: python bot.py
+    depends_on:
+      - cache
+      - platform
+    env_file:
+      - config/game_bot/.env
+    profiles: ["cli-only"]
+    volumes:
+      - ./game_bot:/src
+  platform:
+    build: platform 
+    command:
+      - ./start-web-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      cache:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    env_file:
+      - config/platform/.env
+    environment:
+      - DEBUG=${DEBUG}
+    memswap_limit: 16G
+    ports:
+      - "9000:8000"
+    volumes:
+      - ./platform/web_server:/src
+  postgres:
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=postgres
+      - POSTGRES_HOST=localhost
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    image: 'postgres:14-alpine'
+    ports:
+      - "5432:5432"
+
+networks:
+  localdev:
+    attachable: true
+    driver: host
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  
