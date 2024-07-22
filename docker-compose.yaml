@@ -1,5 +1,13 @@
 version: "3.9"
 services:
+  alert-manager:
+    image: prom/alertmanager
+    volumes:
+      - "./config/prometheus/alertmanager.yml:/alertmanager/alertmanager.yml"
+    networks:
+      - localprom
+    ports:
+      - 9093:9093
   cache:
     image: 'redis:latest'
     restart: 'on-failure'
@@ -17,6 +25,23 @@ services:
     profiles: ["cli-only"]
     volumes:
       - ./game_bot:/src
+  grafana:
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    image: grafana/grafana
+    networks:
+      - localprom
+    ports:
+      - 3000:3000
+    volumes:
+      - ./config/grafana:/etc/grafana/provisioning/datasources
+  node-exporter:
+    image: prom/node-exporter
+    networks:
+      - localprom
+    ports:
+      - 9100:9100
   platform:
     build: platform 
     command:
@@ -38,7 +63,7 @@ services:
       - DEBUG=${DEBUG}
     memswap_limit: 16G
     ports:
-      - "9000:8000"
+      - "8000:8000"
     volumes:
       - ./platform/web_server:/src
   postgres:
@@ -55,12 +80,23 @@ services:
     image: 'postgres:14-alpine'
     ports:
       - "5432:5432"
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./config/prometheus/rules.yml:/etc/prometheus/rules.yml"
+    networks:
+      - localprom
+    ports:
+      - 9090:9090
 
 networks:
-  localdev:
-    attachable: true
-    driver: host
-    ipam:
-      config:
-        - subnet: 172.20.0.0/24
+  #localdev:
+  #  attachable: true
+  #  driver: host
+  #  ipam:
+  #    config:
+  #      - subnet: 172.20.0.0/24
+  localprom:
+    driver: bridge
   
