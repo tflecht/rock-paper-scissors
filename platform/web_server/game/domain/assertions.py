@@ -15,3 +15,7 @@ def not_complete(game: models.Game):
 def not_in_game(user: DiscordUser):
     if models.Game.objects.filter(is_complete=False, players__user=user).exists():
         raise exceptions.UserAlreadyInGame(user)
+
+def user_has_chosen(game: models.Game):
+    if game.user_choice is None:
+        raise exceptions.UserHasNotChosen

@@ -33,10 +33,30 @@ class Choose(generics.CreateAPIView):
         )
         game = models.Game.objects.get(id=game_id, user=self.request.discord_user)
         game = game_domain.choose(choice=choice, game=game)
+        # TIM - block here until game resolved
         return Response(
             data=self.get_serializer(game).data,
             status=status.HTTP_200_OK,
         )
+
+
+class CompleteGame(generics.CreateAPIView):
+    serializer_class = serializers.GameSerializer
+
+    def create(self, request: Request, *args, **kwargs):
+        game_id = request_helpers.get_mandatory_typed_value(
+            request.data,
+            key='game_id',
+            value_type=str,
+        )
+        opponent_choice = request_helpers.get_mandatory_typed_value(
+            request.data,
+            key='opponent_choice',
+            value_type=str,
+        )
+        game = models.Game.objects.get(id=game_id)
+        game_domain.complete(game=game, opponent_choice=opponent_choice)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PlayGame(generics.CreateAPIView):
@@ -50,5 +70,18 @@ class PlayGame(generics.CreateAPIView):
         game = game_domain.create_or_resume_game(request.discord_user)
         return Response(
             data=self.get_serializer(game).data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class PendingGame(generics.RetrieveAPIView):
+    serializer_class = serializers.GameSerializer
+    
+    def get(self, request: Request, *args, **kwargs):
+        pending_game = game_domain.get_pending()
+        if not pending_game:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            data=self.get_serializer(pending_game).data,
             status=status.HTTP_200_OK,
         )

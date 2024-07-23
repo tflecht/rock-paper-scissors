@@ -41,3 +41,9 @@ class UserAlreadyInGame(GameError):
                 'message': f"Discord user {user} is already in a game",
             },
         )
+
+
+class UserHasNotChosen(GameError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = _('User has not made their choice in this game')
+    default_code = _('user_has_not_chosen')

@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from django.db import transaction
 
@@ -20,6 +21,39 @@ WIN = 'win'
 CHOICES = [ROCK, PAPER, SCISSORS]
 
 
+def choose(
+    *,
+    choice: str,
+    game: models.Game,
+) -> models.Game:
+    assertions.not_complete(game)
+    game.user_choice = choice
+    game.save()
+    return game
+
+
+@transaction.atomic
+def create_or_resume_game(user: DiscordUser) -> models.Game:
+    game = models.Game.objects.filter(is_complete=False, user=user).first()
+    if not game:
+        game = models.Game.objects.create(user=user)
+    return game
+
+
+def complete(*, game: models.Game, opponent_choice: str) -> models.Game:
+    assertions.not_complete(game)
+    assertions.user_has_chosen(game)
+    game.is_complete = True
+    game.opponent_choice = opponent_choice
+    game.result = result(game.user_choice, opponent_choice)
+    game.save()
+    return game
+
+
+def get_pending() -> Optional[models.Game]:
+    return models.Game.objects.filter(is_complete=False, user_choice__isnull=False).first()
+
+
 def result(user_choice: str, opponent_choice: str) -> str:
     if user_choice not in CHOICES:
         raise exceptions.GameError
@@ -33,26 +67,3 @@ def result(user_choice: str, opponent_choice: str) -> str:
         return WIN if opponent_choice == ROCK else LOSS
     else: # SCISSORS
         return WIN if opponent_choice == PAPER else LOSS
-
-
-def choose(
-    *,
-    choice: str,
-    game: models.Game,
-) -> models.Game:
-    assertions.not_complete(game)
-    opponent_choice = CHOICES[randomly.random_integer(0, len(CHOICES))]
-    game.is_complete = True
-    game.opponent_choice = opponent_choice
-    game.result = result(choice, opponent_choice)
-    game.user_choice = choice
-    game.save()
-    return game
-
-
-@transaction.atomic
-def create_or_resume_game(user: DiscordUser) -> models.Game:
-    game = models.Game.objects.filter(is_complete=False, user=user).first()
-    if not game:
-        game = models.Game.objects.create(user=user)
-    return game
