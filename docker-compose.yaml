@@ -10,6 +10,7 @@ services:
       - 9093:9093
   gameserver:
     build: game_server
+    image: tflecht/rock-paper-scissors-gameserver:latest
     command: python main.py
     restart: 'always'
     depends_on:
@@ -21,6 +22,7 @@ services:
       - ./game_server:/src
   gamebot:
     build: game_bot
+    image: tflecht/rock-paper-scissors-gamebot:latest
     command: python main.py
     depends_on:
       postgres:
@@ -48,6 +50,7 @@ services:
       - 9100:9100
   platform:
     build: platform 
+    image: tflecht/rock-paper-scissors-platform:latest
     command:
       - ./start-web-server
     depends_on:
