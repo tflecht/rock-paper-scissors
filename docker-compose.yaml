@@ -8,18 +8,13 @@ services:
       - localprom
     ports:
       - 9093:9093
-  cache:
-    image: 'redis:latest'
-    restart: 'on-failure'
-    ports:
-      - '6379:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass password
   gameserver:
     build: game_server
     command: python main.py
     restart: 'always'
     depends_on:
-      - platform
+      postgres:
+        condition: service_healthy
     env_file:
       - config/game_server/.env
     volumes:
@@ -28,8 +23,8 @@ services:
     build: game_bot
     command: python main.py
     depends_on:
-      - cache
-      - platform
+      postgres:
+        condition: service_healthy
     env_file:
       - config/game_bot/.env
     volumes:
@@ -58,8 +53,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      cache:
-        condition: service_started
     deploy:
       resources:
         limits:

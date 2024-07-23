@@ -10,4 +10,5 @@ urlpatterns = [
     path('complete/', views.CompleteGame.as_view(), name='complete'),
     path('pending/', views.PendingGame.as_view(), name='pending'),
     path('play/', views.PlayGame.as_view(), name='play'),
+    path('status/<int:game_id>/', views.Status.as_view(), name='status'),
 ]

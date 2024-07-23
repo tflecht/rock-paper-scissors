@@ -85,3 +85,19 @@ class PendingGame(generics.RetrieveAPIView):
             data=self.get_serializer(pending_game).data,
             status=status.HTTP_200_OK,
         )
+
+
+class Status(generics.RetrieveAPIView):
+    serializer_class = serializers.GameSerializer
+
+    def get(self, request: Request, *args, **kwargs):
+        game_id = request_helpers.get_mandatory_typed_value(
+            self.kwargs,
+            key='game_id',
+            value_type=str,
+        )
+        game = models.Game.objects.get(id=game_id)
+        return Response(
+            data=self.get_serializer(game).data,
+            status=status.HTTP_200_OK,
+        )

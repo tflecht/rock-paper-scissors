@@ -1,4 +1,3 @@
-from sentry_sdk import capture_exception
 import discord
 import logging
 

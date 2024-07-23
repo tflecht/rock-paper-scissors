@@ -39,3 +39,16 @@ def play(
         endpoint=f"game/play/",
     )
     return response.json()
+
+
+def status(
+    *,
+    game_id: int,
+    guild: discord.Guild,
+    user: discord.User,
+) -> JsonBlob:
+    response = client.get(
+        headers=client.headers(guild=guild, user=user),
+        endpoint=f"game/status/{game_id}/",
+    )
+    return response.json()

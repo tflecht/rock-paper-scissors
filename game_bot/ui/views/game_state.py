@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 
 import discord
@@ -69,6 +70,9 @@ class View(discord.ui.View):
             guild=interaction.guild,
             user=interaction.user,
         )
+        while not data['is_complete']:
+            time.sleep(1)
+            data = platform.game.status(game_id=data['id'], guild=interaction.guild, user=interaction.user)
         await self.replace(data=data, interaction=interaction)
 
     async def callback_paper(self, interaction: discord.Interaction):
@@ -78,6 +82,9 @@ class View(discord.ui.View):
             guild=interaction.guild,
             user=interaction.user,
         )
+        while not data['is_complete']:
+            time.sleep(1)
+            data = platform.game.status(game_id=data['id'], guild=interaction.guild, user=interaction.user)
         await self.replace(data=data, interaction=interaction)
 
     async def callback_scissors(self, interaction: discord.Interaction):
@@ -87,6 +94,9 @@ class View(discord.ui.View):
             guild=interaction.guild,
             user=interaction.user,
         )
+        while not data['is_complete']:
+            time.sleep(1)
+            data = platform.game.status(game_id=data['id'], guild=interaction.guild, user=interaction.user)
         await self.replace(data=data, interaction=interaction)
 
     async def replace(self, *, data: JsonBlob, interaction: discord.Interaction):
