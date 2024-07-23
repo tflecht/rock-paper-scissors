@@ -59,6 +59,11 @@ class CompleteGame(generics.CreateAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class HealthCheck(generics.RetrieveAPIView):
+    def get(self, request: Request, *args, **kwargs):
+        return Response(status.HTTP_204_NO_CONTENT)
+
+
 class PlayGame(generics.CreateAPIView):
     permission_classes = (
         discord_permissions.FromDiscordUser,

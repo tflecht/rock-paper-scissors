@@ -14,7 +14,7 @@ services:
     command: python main.py
     restart: 'always'
     depends_on:
-      postgres:
+      platform:
         condition: service_healthy
     env_file:
       - config/game_server/.env
@@ -25,7 +25,7 @@ services:
     image: tflecht/rock-paper-scissors-gamebot:latest
     command: python main.py
     depends_on:
-      postgres:
+      platform:
         condition: service_healthy
     env_file:
       - config/game_bot/.env
@@ -56,6 +56,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8000/game/health_check/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     deploy:
       resources:
         limits:
